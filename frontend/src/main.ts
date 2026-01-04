@@ -17,6 +17,8 @@ import { QuizState, Player, ScreenType, AppState } from './types';
 import { getLevelQuestions } from './data/questionsAdapter';
 import { Menu } from './components/Menu';
 import { PlayerMenu } from './components/PlayerMenu';
+import { AudioControl } from './components/AudioControl';
+import { AudioService } from './services/AudioService';
 
 // ============================================
 // ESTADO GLOBAL DA APLICAÇÃO
@@ -64,6 +66,11 @@ playerMenuContainer.id = 'player-menu-container';
 const gameContainer = document.querySelector('.quiz-box') as HTMLElement;
 const finalScreen = document.getElementById('final-screen') as HTMLElement;
 
+// Container para controle de áudio
+const audioControlContainer = document.createElement('div');
+audioControlContainer.id = 'audio-control-container';
+audioControlContainer.className = 'audio-control-container';
+
 // Elementos do jogo
 const questionTextEl = document.getElementById('question-text') as HTMLElement;
 const questionNumberEl = document.getElementById('question-number') as HTMLElement;
@@ -93,11 +100,15 @@ const playerMenu = new PlayerMenu(
     (players) => handlePlayersChanged(players)
 );
 
+const audioControl = new AudioControl(audioControlContainer);
+
 // Adicionar containers ao DOM
 if (container && gameContainer) {
     container.insertBefore(menuContainer, gameContainer);
     document.body.appendChild(playerMenuContainer);
 }
+// Adicionar controle de áudio ao body (topo direito)
+document.body.appendChild(audioControlContainer);
 
 // ============================================
 // GERENCIAMENTO DE TELAS
@@ -144,6 +155,9 @@ function handleStartGame(): void {
         handleManagePlayers();
         return;
     }
+    
+    // Tocar som de início de jogo
+    AudioService.playGameStart();
     
     // Iniciar o jogo
     quizState.players = appState.players.map(p => ({ ...p }));
@@ -204,6 +218,9 @@ function pararTimer(): void {
 function iniciarTimer(): void {
     pararTimer();
     
+    // Resetar flag de timer warning para nova pergunta
+    AudioService.resetTimerWarning();
+    
     quizState.tempoRestante = quizState.tempoLimite;
     quizState.timerAtivo = true;
     
@@ -215,6 +232,11 @@ function iniciarTimer(): void {
     quizState.timerId = window.setInterval(() => {
         quizState.tempoRestante--;
         atualizarDisplayTimer();
+        
+        // Tocar aviso de timer quando restar 5 segundos ou menos
+        if (quizState.tempoRestante <= 5 && quizState.tempoRestante > 0) {
+            AudioService.playTimerWarning(quizState.perguntaAtual);
+        }
         
         if (quizState.tempoRestante <= 0) {
             tempoEsgotado();
@@ -370,9 +392,13 @@ function selecionarAlternativa(index: number): void {
         const acertou = index === respostaCorreta;
         
         if (!acertou) {
+            // Tocar som de erro
+            AudioService.playWrong();
             alternativesEls[index].classList.add('incorrect');
             jogadorAtual.erros++;
         } else {
+            // Tocar som de acerto
+            AudioService.playCorrect();
             jogadorAtual.pontuacao += 10;
             jogadorAtual.acertos++;
             quizState.pontuacao++;
@@ -409,6 +435,9 @@ function proximaPergunta(): void {
 }
 
 function finalizarNivel(): void {
+    // Tocar som de nível completo
+    AudioService.playLevelComplete();
+    
     // Verificar se há mais níveis
     const niveis = [1, 2, 3]; // FÁCIL, MÉDIO, DIFÍCIL
     const proximoNivel = niveis.find(n => n > quizState.nivelAtual);
@@ -427,6 +456,9 @@ function finalizarNivel(): void {
 async function finalizarJogo(): Promise<void> {
     quizState.jogoFinalizado = true;
     pararTimer();
+    
+    // Tocar som de fim de jogo
+    AudioService.playGameOver();
     
     atualizarRanking();
     atualizarRankingFinal();
@@ -519,12 +551,16 @@ function atualizarRankingFinal(): void {
 
 alternativesEls.forEach((btn, index) => {
     btn.addEventListener('click', () => {
+        // Tocar som de clique
+        AudioService.playClick();
         selecionarAlternativa(index);
     });
 });
 
 if (nextBtn) {
     nextBtn.addEventListener('click', () => {
+        // Tocar som de clique
+        AudioService.playClick();
         proximaPergunta();
     });
 }
@@ -532,6 +568,8 @@ if (nextBtn) {
 const finalRestartBtn = document.getElementById('final-restart-btn') as HTMLButtonElement;
 if (finalRestartBtn) {
     finalRestartBtn.addEventListener('click', () => {
+        // Tocar som de clique
+        AudioService.playClick();
         showScreen('menu');
     });
 }
@@ -541,6 +579,12 @@ if (finalRestartBtn) {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar AudioService
+    AudioService.init();
+    
+    // Renderizar controle de áudio
+    audioControl.render();
+    
     // Mostrar menu inicial
     showScreen('menu');
     

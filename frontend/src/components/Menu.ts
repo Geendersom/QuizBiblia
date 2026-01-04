@@ -3,6 +3,7 @@
 // ============================================
 
 import { AppState } from '../types';
+import { AudioService } from '../services/AudioService';
 
 export class Menu {
     private container: HTMLElement;
@@ -61,10 +62,12 @@ export class Menu {
 
         startBtn?.addEventListener('click', () => {
             if (startBtn.disabled) return;
+            AudioService.playClick();
             this.onStartGame();
         });
 
         manageBtn?.addEventListener('click', () => {
+            AudioService.playClick();
             this.onManagePlayers();
         });
     }

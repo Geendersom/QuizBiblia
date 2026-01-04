@@ -3,6 +3,7 @@
 // ============================================
 
 import { Player } from '../types';
+import { AudioService } from '../services/AudioService';
 
 export class PlayerMenu {
     private container: HTMLElement;
@@ -105,17 +106,20 @@ export class PlayerMenu {
 
         // Fechar menu
         closeBtn?.addEventListener('click', () => {
+            AudioService.playClick();
             this.onClose();
         });
 
         // Adicionar jogador
         addBtn?.addEventListener('click', () => {
+            AudioService.playClick();
             this.adicionarJogador(input);
         });
 
         // Enter no input
         input?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                AudioService.playClick();
                 this.adicionarJogador(input);
             }
         });
@@ -124,6 +128,7 @@ export class PlayerMenu {
         listContainer?.addEventListener('click', (e) => {
             const target = e.target as HTMLElement;
             if (target.classList.contains('remove-player-btn')) {
+                AudioService.playClick();
                 const id = parseInt(target.getAttribute('data-id') || '0');
                 this.removerJogador(id);
             }
@@ -131,6 +136,7 @@ export class PlayerMenu {
 
         // Salvar e fechar
         saveBtn?.addEventListener('click', () => {
+            AudioService.playClick();
             this.onPlayersChanged([...this.players]);
             this.onClose();
         });
