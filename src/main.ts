@@ -1,4 +1,12 @@
 // ============================================
+// IMPORTS - Serviços
+// ============================================
+
+// Nota: Os serviços serão carregados via script tags no HTML
+// TypeScript não consegue fazer imports dinâmicos de módulos em runtime
+// As funções verificarão se os serviços existem antes de usar
+
+// ============================================
 // INTERFACES E TIPOS
 // ============================================
 
@@ -41,6 +49,10 @@ interface QuizState {
     jogadorAtualIndex: number;
     ranking: Player[];
     cadastroCompleto: boolean;
+    // Sistema de níveis e dificuldade adaptativa
+    nivelAtual: number;
+    perguntasJaUsadas: number[];
+    playerStatsCache: { [playerId: number]: PlayerStats };
 }
 
 // Dados das Perguntas
@@ -106,7 +118,11 @@ const quizState: QuizState = {
     players: [],
     jogadorAtualIndex: 0,
     ranking: [],
-    cadastroCompleto: false
+    cadastroCompleto: false,
+    // Sistema de níveis e dificuldade adaptativa
+    nivelAtual: 1,
+    perguntasJaUsadas: [],
+    playerStatsCache: {}
 };
 
 // ============================================
@@ -273,6 +289,17 @@ function iniciarJogo(): void {
         return;
     }
     
+    // Limpar jogo salvo anterior ao iniciar novo
+    try {
+        if (typeof (window as any).StorageService !== 'undefined') {
+            (window as any).StorageService.clearGameState();
+        } else {
+            localStorage.removeItem('quizbiblia_ranking');
+        }
+    } catch (error) {
+        console.warn('Erro ao limpar estado:', error);
+    }
+    
     // Inicializar ranking
     quizState.ranking = [...quizState.players];
     atualizarRanking();
@@ -284,9 +311,15 @@ function iniciarJogo(): void {
     
     quizState.cadastroCompleto = true;
     quizState.jogadorAtualIndex = 0;
+    quizState.nivelAtual = 1;
+    quizState.perguntasJaUsadas = [];
+    quizState.playerStatsCache = {};
     
     // Inicializar quiz
     inicializarQuiz();
+    
+    // Salvar estado inicial
+    salvarEstadoJogo();
 }
 
 /**
@@ -301,6 +334,193 @@ function mostrarTelaCadastro(): void {
     rankingContainer.style.display = 'none';
     startGameBtn.disabled = true;
     atualizarListaJogadores();
+}
+
+// ============================================
+// FUNÇÕES DE PERSISTÊNCIA E STORAGE
+// ============================================
+
+/**
+ * Salva o estado atual do jogo
+ */
+function salvarEstadoJogo(): void {
+    try {
+        // Usar eval para acessar serviços compilados (necessário para módulos TS)
+        if (typeof (window as any).StorageService !== 'undefined') {
+            (window as any).StorageService.saveGameState({
+                players: quizState.players,
+                perguntaAtual: quizState.perguntaAtual,
+                nivelAtual: quizState.nivelAtual
+            });
+        } else {
+            // Fallback: salvar diretamente no localStorage
+            const state = {
+                players: quizState.players,
+                perguntaAtual: quizState.perguntaAtual,
+                nivelAtual: quizState.nivelAtual,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('quizbiblia_ranking', JSON.stringify(state));
+        }
+    } catch (error) {
+        console.warn('Erro ao salvar estado do jogo:', error);
+    }
+}
+
+/**
+ * Carrega um jogo salvo
+ */
+function carregarJogoSalvo(): boolean {
+    try {
+        let savedState: any = null;
+        
+        if (typeof (window as any).StorageService !== 'undefined') {
+            savedState = (window as any).StorageService.loadGameState();
+        } else {
+            // Fallback: carregar diretamente do localStorage
+            const saved = localStorage.getItem('quizbiblia_ranking');
+            if (saved) {
+                savedState = JSON.parse(saved);
+            }
+        }
+        
+        if (!savedState || !savedState.players || savedState.players.length === 0) {
+            return false;
+        }
+        
+        // Restaurar players
+        quizState.players = savedState.players;
+        quizState.perguntaAtual = savedState.perguntaAtual || 0;
+        quizState.nivelAtual = savedState.nivelAtual || 1;
+        quizState.jogadorAtualIndex = quizState.perguntaAtual % (quizState.players.length || 1);
+        
+        // Restaurar ranking
+        quizState.ranking = [...quizState.players];
+        atualizarRanking();
+        
+        return true;
+    } catch (error) {
+        console.warn('Erro ao carregar jogo salvo:', error);
+        return false;
+    }
+}
+
+/**
+ * Mostra diálogo para continuar jogo salvo
+ */
+function mostrarDialogoContinuar(): void {
+    let hasSaved = false;
+    let savedState: any = null;
+    
+    try {
+        if (typeof (window as any).StorageService !== 'undefined') {
+            hasSaved = (window as any).StorageService.hasSavedGame();
+            if (hasSaved) {
+                savedState = (window as any).StorageService.loadGameState();
+            }
+        } else {
+            // Fallback: verificar localStorage diretamente
+            const saved = localStorage.getItem('quizbiblia_ranking');
+            hasSaved = saved !== null;
+            if (hasSaved && saved) {
+                savedState = JSON.parse(saved);
+            }
+        }
+    } catch (error) {
+        console.warn('Erro ao verificar jogo salvo:', error);
+        return;
+    }
+    
+    if (!hasSaved || !savedState) {
+        return;
+    }
+    if (!savedState || savedState.players.length === 0) {
+        return;
+    }
+    
+    // Criar diálogo simples via DOM (sem alert)
+    const dialog = document.createElement('div');
+    dialog.className = 'continue-dialog';
+    dialog.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    dialog.innerHTML = `
+        <div class="continue-dialog-content" style="
+            background: rgba(10, 46, 10, 0.95);
+            border: 3px solid #4caf50;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+        ">
+            <h3 style="color: #4caf50; margin-bottom: 20px;">Jogo Salvo Encontrado</h3>
+            <p style="color: #fff; margin-bottom: 15px;">Deseja continuar de onde parou?</p>
+            <p class="continue-info" style="color: #66bb6a; font-size: 14px; margin: 10px 0;">
+                Partida: ${new Date(savedState.timestamp).toLocaleString('pt-BR')}
+            </p>
+            <p class="continue-info" style="color: #66bb6a; font-size: 14px; margin: 10px 0;">
+                Pergunta: ${savedState.perguntaAtual + 1}
+            </p>
+            <div class="continue-buttons" style="display: flex; gap: 15px; margin-top: 30px; justify-content: center;">
+                <button id="btn-continuar" class="btn-continue" style="
+                    padding: 12px 30px;
+                    background: rgba(76, 175, 80, 0.3);
+                    border: 2px solid #4caf50;
+                    color: #fff;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                ">Continuar</button>
+                <button id="btn-novo-jogo" class="btn-new-game" style="
+                    padding: 12px 30px;
+                    background: rgba(244, 67, 54, 0.3);
+                    border: 2px solid #f44336;
+                    color: #fff;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                ">Novo Jogo</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    document.getElementById('btn-continuar')?.addEventListener('click', () => {
+        dialog.remove();
+        if (carregarJogoSalvo()) {
+            cadastroScreen.style.display = 'none';
+            quizBox.style.display = 'block';
+            rankingContainer.style.display = 'block';
+            quizState.cadastroCompleto = true;
+            mostrarPergunta();
+        }
+    });
+    
+    document.getElementById('btn-novo-jogo')?.addEventListener('click', () => {
+        try {
+            if (typeof (window as any).StorageService !== 'undefined') {
+                (window as any).StorageService.clearGameState();
+            } else {
+                localStorage.removeItem('quizbiblia_ranking');
+            }
+        } catch (error) {
+            console.warn('Erro ao limpar estado:', error);
+        }
+        dialog.remove();
+    });
 }
 
 // ============================================
@@ -439,6 +659,22 @@ function tempoEsgotado(): void {
         jogadorAtual.respostasForaDoTempo++;
         jogadorAtual.erros++;
         // Não adiciona pontuação (0 pontos)
+        
+        // Atualizar estatísticas de erros consecutivos
+        if (quizState.playerStatsCache[jogadorAtual.id] && 
+            typeof (window as any).DifficultyManager !== 'undefined') {
+            quizState.playerStatsCache[jogadorAtual.id] = 
+                (window as any).DifficultyManager.updateConsecutiveErrors(
+                    quizState.playerStatsCache[jogadorAtual.id],
+                    false
+                );
+        }
+        
+        // Atualizar cache de estatísticas
+        if (typeof (window as any).DifficultyManager !== 'undefined') {
+            quizState.playerStatsCache[jogadorAtual.id] = 
+                (window as any).DifficultyManager.calculatePlayerStats(jogadorAtual);
+        }
     }
     
     // Marcar como já processada (evitar múltiplas execuções)
@@ -455,12 +691,18 @@ function tempoEsgotado(): void {
     const respostaCorreta = pergunta.indiceCorreto;
     alternativesEls[respostaCorreta].classList.add('correct');
     
+    // Marcar pergunta como usada
+    if (!quizState.perguntasJaUsadas.includes(pergunta.id)) {
+        quizState.perguntasJaUsadas.push(pergunta.id);
+    }
+    
     // Mostrar mensagem de tempo esgotado
     timerMessage.style.display = 'block';
     timerDisplay.style.display = 'none';
     
-    // Atualizar ranking
+    // Atualizar ranking e salvar estado
     atualizarRanking();
+    salvarEstadoJogo();
     
     // Mostrar botão de próxima
     if (quizState.perguntaAtual < quizState.perguntas.length - 1) {
@@ -555,21 +797,51 @@ function exibirEstrelas(): void {
 // ============================================
 
 function inicializarQuiz(): void {
-    quizState.perguntaAtual = 0;
+    quizState.perguntaAtual = quizState.perguntaAtual || 0;
     quizState.pontuacao = 0;
     quizState.respostaSelecionada = null;
     quizState.jogoFinalizado = false;
-    quizState.jogadorAtualIndex = 0;
+    quizState.jogadorAtualIndex = quizState.jogadorAtualIndex || 0;
     
-    // Resetar estatísticas dos jogadores
-    quizState.players.forEach(player => {
-        player.pontuacao = 0;
-        player.acertos = 0;
-        player.erros = 0;
-        player.estrelas = 0;
-        player.respostasNoTempo = 0;
-        player.respostasForaDoTempo = 0;
-    });
+    // Resetar estatísticas dos jogadores (se não estiver carregando jogo salvo)
+    let hasSaved = false;
+    try {
+        if (typeof (window as any).StorageService !== 'undefined') {
+            hasSaved = (window as any).StorageService.hasSavedGame();
+        } else {
+            hasSaved = localStorage.getItem('quizbiblia_ranking') !== null;
+        }
+    } catch (error) {
+        hasSaved = false;
+    }
+    
+    if (!hasSaved) {
+        quizState.players.forEach(player => {
+            player.pontuacao = 0;
+            player.acertos = 0;
+            player.erros = 0;
+            player.estrelas = 0;
+            player.respostasNoTempo = 0;
+            player.respostasForaDoTempo = 0;
+            
+            // Inicializar cache de estatísticas
+            if (typeof (window as any).DifficultyManager !== 'undefined') {
+                quizState.playerStatsCache[player.id] = 
+                    (window as any).DifficultyManager.calculatePlayerStats(player);
+            }
+        });
+        
+        quizState.perguntasJaUsadas = [];
+    } else {
+        // Se carregando jogo salvo, inicializar stats dos players existentes
+        quizState.players.forEach(player => {
+            if (!quizState.playerStatsCache[player.id] && 
+                typeof (window as any).DifficultyManager !== 'undefined') {
+                quizState.playerStatsCache[player.id] = 
+                    (window as any).DifficultyManager.calculatePlayerStats(player);
+            }
+        });
+    }
     
     // Resetar timer
     quizState.tempoRestante = quizState.tempoLimite;
@@ -653,7 +925,47 @@ function selecionarAlternativa(index: number): void {
     
     // Atualizar estatísticas do jogador atual
     const jogadorAtual = quizState.players[quizState.jogadorAtualIndex];
-    jogadorAtual.respostasNoTempo++;
+    if (jogadorAtual) {
+        jogadorAtual.respostasNoTempo++;
+        
+        const acertou = index === respostaCorreta;
+        
+        // Se a resposta estiver errada, marcar como incorreta
+        if (!acertou) {
+            alternativesEls[index].classList.add('incorrect');
+            jogadorAtual.erros++;
+            // Atualizar estatísticas de erros consecutivos
+            if (quizState.playerStatsCache[jogadorAtual.id]) {
+                quizState.playerStatsCache[jogadorAtual.id] = 
+                    DifficultyManager.updateConsecutiveErrors(
+                        quizState.playerStatsCache[jogadorAtual.id],
+                        false
+                    );
+            }
+        } else {
+            // Incrementar pontuação se acertou (+10 pontos)
+            jogadorAtual.pontuacao += 10;
+            jogadorAtual.acertos++;
+            quizState.pontuacao++;
+            atualizarScore();
+            
+            // Atualizar estatísticas de erros consecutivos (resetar)
+            if (quizState.playerStatsCache[jogadorAtual.id] && 
+                typeof (window as any).DifficultyManager !== 'undefined') {
+                quizState.playerStatsCache[jogadorAtual.id] = 
+                    (window as any).DifficultyManager.updateConsecutiveErrors(
+                        quizState.playerStatsCache[jogadorAtual.id],
+                        true
+                    );
+            }
+        }
+        
+        // Atualizar cache de estatísticas do jogador
+        if (typeof (window as any).DifficultyManager !== 'undefined') {
+            quizState.playerStatsCache[jogadorAtual.id] = 
+                (window as any).DifficultyManager.calculatePlayerStats(jogadorAtual);
+        }
+    }
     
     // Desabilitar todos os botões
     alternativesEls.forEach((btn) => {
@@ -664,21 +976,14 @@ function selecionarAlternativa(index: number): void {
     // Marcar resposta correta
     alternativesEls[respostaCorreta].classList.add('correct');
     
-    // Se a resposta estiver errada, marcar como incorreta
-    if (index !== respostaCorreta) {
-        alternativesEls[index].classList.add('incorrect');
-        jogadorAtual.erros++;
-        // 0 pontos para resposta errada
-    } else {
-        // Incrementar pontuação se acertou (+10 pontos)
-        jogadorAtual.pontuacao += 10;
-        jogadorAtual.acertos++;
-        quizState.pontuacao++;
-        atualizarScore();
+    // Marcar pergunta como usada
+    if (!quizState.perguntasJaUsadas.includes(pergunta.id)) {
+        quizState.perguntasJaUsadas.push(pergunta.id);
     }
     
-    // Atualizar ranking
+    // Atualizar ranking e salvar estado
     atualizarRanking();
+    salvarEstadoJogo();
     
     // Mostrar botão de próxima
     if (quizState.perguntaAtual < quizState.perguntas.length - 1) {
@@ -701,7 +1006,7 @@ function proximaPergunta(): void {
     }
 }
 
-function finalizarQuiz(): void {
+async function finalizarQuiz(): Promise<void> {
     quizState.jogoFinalizado = true;
     
     // Parar timer se ainda estiver ativo
@@ -710,6 +1015,20 @@ function finalizarQuiz(): void {
     // Atualizar ranking final
     atualizarRanking();
     atualizarRankingFinal();
+    
+    // Salvar estado final e enviar ao ranking online
+    salvarEstadoJogo();
+    
+    // Enviar scores para ranking online (assíncrono, não bloqueia UI)
+    if (quizState.players.length > 0 && typeof (window as any).RankingService !== 'undefined') {
+        quizState.players.forEach(async (player) => {
+            const scoreData = (window as any).RankingService.prepareScoreData(
+                player, 
+                quizState.nivelAtual
+            );
+            await (window as any).RankingService.submitScore(scoreData);
+        });
+    }
     
     // Mostrar tela final
     quizBox.style.display = 'none';
@@ -732,6 +1051,17 @@ function finalizarQuiz(): void {
     } else {
         starsDisplay.style.display = 'none';
         starsMessage.style.display = 'none';
+    }
+    
+    // Limpar jogo salvo após finalizar
+    try {
+        if (typeof (window as any).StorageService !== 'undefined') {
+            (window as any).StorageService.clearGameState();
+        } else {
+            localStorage.removeItem('quizbiblia_ranking');
+        }
+    } catch (error) {
+        console.warn('Erro ao limpar estado:', error);
     }
 }
 
@@ -786,6 +1116,14 @@ startGameBtn.addEventListener('click', () => {
 
 // Inicializar o quiz quando a página carregar
 document.addEventListener('DOMContentLoaded', () => {
-    mostrarTelaCadastro();
+    // Verificar se há jogo salvo antes de mostrar cadastro
+    mostrarDialogoContinuar();
+    
+    // Se não houver jogo salvo ou usuário escolheu novo jogo, mostrar cadastro
+    setTimeout(() => {
+        if (!quizState.cadastroCompleto) {
+            mostrarTelaCadastro();
+        }
+    }, 100);
 });
 
