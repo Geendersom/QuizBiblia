@@ -175,6 +175,11 @@ const starsMessage = document.getElementById('stars-message') as HTMLElement;
  * Adiciona um novo jogador à lista
  */
 function adicionarJogador(): void {
+    if (!playerNameInput) {
+        console.error('Input de nome não encontrado!');
+        return;
+    }
+    
     const nome = playerNameInput.value.trim();
     
     // Validações
@@ -208,12 +213,14 @@ function adicionarJogador(): void {
     };
     
     quizState.players.push(novoJogador);
-    playerNameInput.value = '';
+    if (playerNameInput) {
+        playerNameInput.value = '';
+    }
     atualizarListaJogadores();
     mostrarMensagemCadastro('Jogador adicionado!', 'success');
     
     // Habilitar botão iniciar se tiver pelo menos 1 jogador
-    if (quizState.players.length >= 1) {
+    if (quizState.players.length >= 1 && startGameBtn) {
         startGameBtn.disabled = false;
     }
 }
@@ -284,6 +291,11 @@ function mostrarMensagemCadastro(mensagem: string, tipo: 'success' | 'error'): v
  * Inicia o jogo após o cadastro
  */
 function iniciarJogo(): void {
+    if (!cadastroScreen || !quizBox || !rankingContainer) {
+        console.error('Elementos da interface não encontrados!');
+        return;
+    }
+    
     if (quizState.players.length < 1) {
         mostrarMensagemCadastro('Adicione pelo menos 1 jogador!', 'error');
         return;
@@ -407,8 +419,14 @@ function carregarJogoSalvo(): boolean {
 
 /**
  * Mostra diálogo para continuar jogo salvo
+ * Retorna true se mostrou diálogo, false caso contrário
  */
-function mostrarDialogoContinuar(): void {
+function mostrarDialogoContinuar(): boolean {
+    // Não bloquear se os elementos não existirem
+    if (typeof document === 'undefined') {
+        return false;
+    }
+    
     let hasSaved = false;
     let savedState: any = null;
     
@@ -428,14 +446,11 @@ function mostrarDialogoContinuar(): void {
         }
     } catch (error) {
         console.warn('Erro ao verificar jogo salvo:', error);
-        return;
+        return false;
     }
     
-    if (!hasSaved || !savedState) {
-        return;
-    }
-    if (!savedState || savedState.players.length === 0) {
-        return;
+    if (!hasSaved || !savedState || !savedState.players || savedState.players.length === 0) {
+        return false;
     }
     
     // Criar diálogo simples via DOM (sem alert)
@@ -498,29 +513,49 @@ function mostrarDialogoContinuar(): void {
     
     document.body.appendChild(dialog);
     
-    document.getElementById('btn-continuar')?.addEventListener('click', () => {
-        dialog.remove();
-        if (carregarJogoSalvo()) {
-            cadastroScreen.style.display = 'none';
-            quizBox.style.display = 'block';
-            rankingContainer.style.display = 'block';
-            quizState.cadastroCompleto = true;
-            mostrarPergunta();
-        }
-    });
+    // Retornar true para indicar que o diálogo foi mostrado
+    const btnContinuar = document.getElementById('btn-continuar');
+    const btnNovoJogo = document.getElementById('btn-novo-jogo');
     
-    document.getElementById('btn-novo-jogo')?.addEventListener('click', () => {
-        try {
-            if (typeof (window as any).StorageService !== 'undefined') {
-                (window as any).StorageService.clearGameState();
-            } else {
-                localStorage.removeItem('quizbiblia_ranking');
-            }
-        } catch (error) {
-            console.warn('Erro ao limpar estado:', error);
-        }
+    // Se não encontrou os botões, retornar false
+    if (!btnContinuar || !btnNovoJogo) {
         dialog.remove();
-    });
+        return false;
+    }
+    
+    if (btnContinuar) {
+        btnContinuar.addEventListener('click', () => {
+            dialog.remove();
+            if (carregarJogoSalvo()) {
+                if (cadastroScreen) cadastroScreen.style.display = 'none';
+                if (quizBox) quizBox.style.display = 'block';
+                if (rankingContainer) rankingContainer.style.display = 'block';
+                quizState.cadastroCompleto = true;
+                mostrarPergunta();
+            } else {
+                // Se não conseguiu carregar, mostrar cadastro
+                mostrarTelaCadastro();
+            }
+        });
+    }
+    
+    if (btnNovoJogo) {
+        btnNovoJogo.addEventListener('click', () => {
+            try {
+                if (typeof (window as any).StorageService !== 'undefined') {
+                    (window as any).StorageService.clearGameState();
+                } else {
+                    localStorage.removeItem('quizbiblia_ranking');
+                }
+            } catch (error) {
+                console.warn('Erro ao limpar estado:', error);
+            }
+            dialog.remove();
+            mostrarTelaCadastro();
+        });
+    }
+    
+    return true; // Diálogo foi mostrado com sucesso
 }
 
 // ============================================
@@ -1080,50 +1115,89 @@ function atualizarScore(): void {
     }
 }
 
-// Event Listeners
-alternativesEls.forEach((btn, index) => {
-    btn.addEventListener('click', () => {
-        selecionarAlternativa(index);
-    });
-});
+// Event Listeners serão inicializados na função inicializarEventListeners()
 
-nextBtn.addEventListener('click', () => {
-    proximaPergunta();
-});
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
 
-restartBtn.addEventListener('click', () => {
-    mostrarTelaCadastro();
-});
-
-finalRestartBtn.addEventListener('click', () => {
-    mostrarTelaCadastro();
-});
-
-// Event Listeners do Cadastro
-addPlayerBtn.addEventListener('click', () => {
-    adicionarJogador();
-});
-
-playerNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        adicionarJogador();
+/**
+ * Inicializa os event listeners quando o DOM estiver pronto
+ */
+function inicializarEventListeners(): void {
+    // Verificar se os elementos existem antes de adicionar listeners
+    if (!addPlayerBtn || !playerNameInput || !startGameBtn) {
+        console.error('Elementos de cadastro não encontrados!');
+        return;
     }
-});
+    
+    // Event Listeners do Cadastro
+    addPlayerBtn.addEventListener('click', () => {
+        adicionarJogador();
+    });
 
-startGameBtn.addEventListener('click', () => {
-    iniciarJogo();
-});
+    playerNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            adicionarJogador();
+        }
+    });
+
+    startGameBtn.addEventListener('click', () => {
+        iniciarJogo();
+    });
+    
+    // Event Listeners do Quiz
+    if (alternativesEls && alternativesEls.length > 0) {
+        alternativesEls.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                selecionarAlternativa(index);
+            });
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            proximaPergunta();
+        });
+    }
+
+    if (restartBtn) {
+        restartBtn.addEventListener('click', () => {
+            mostrarTelaCadastro();
+        });
+    }
+
+    if (finalRestartBtn) {
+        finalRestartBtn.addEventListener('click', () => {
+            mostrarTelaCadastro();
+        });
+    }
+}
 
 // Inicializar o quiz quando a página carregar
 document.addEventListener('DOMContentLoaded', () => {
-    // Verificar se há jogo salvo antes de mostrar cadastro
-    mostrarDialogoContinuar();
+    // Inicializar event listeners primeiro
+    try {
+        inicializarEventListeners();
+    } catch (error) {
+        console.error('Erro ao inicializar event listeners:', error);
+    }
     
-    // Se não houver jogo salvo ou usuário escolheu novo jogo, mostrar cadastro
+    // Verificar se há jogo salvo antes de mostrar cadastro
+    // Usar timeout para garantir que tudo está carregado
     setTimeout(() => {
-        if (!quizState.cadastroCompleto) {
+        try {
+            const hasDialog = mostrarDialogoContinuar();
+            
+            // Se não houver diálogo (sem jogo salvo), mostrar cadastro imediatamente
+            if (!hasDialog) {
+                mostrarTelaCadastro();
+            }
+        } catch (error) {
+            console.warn('Erro ao verificar jogo salvo:', error);
+            // Em caso de erro, mostrar cadastro
             mostrarTelaCadastro();
         }
-    }, 100);
+    }, 200);
 });
 
