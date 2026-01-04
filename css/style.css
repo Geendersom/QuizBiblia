@@ -504,10 +504,420 @@ body::after {
     box-shadow: 0 0 15px rgba(244, 67, 54, 0.3);
 }
 
+/* ============================================
+   TELA DE CADASTRO DE JOGADORES
+   ============================================ */
+
+.cadastro-screen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+.cadastro-content {
+    background: rgba(10, 46, 10, 0.95);
+    border: 3px solid #4caf50;
+    border-radius: 25px;
+    padding: 50px 60px;
+    box-shadow: 0 0 40px rgba(76, 175, 80, 0.6);
+    max-width: 600px;
+    width: 100%;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.cadastro-content h2 {
+    font-size: 36px;
+    color: #4caf50;
+    margin-bottom: 10px;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.cadastro-subtitle {
+    text-align: center;
+    color: #66bb6a;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.cadastro-input-group {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.player-name-input {
+    flex: 1;
+    padding: 15px 20px;
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #4caf50;
+    border-radius: 10px;
+    color: #fff;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.player-name-input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #66bb6a;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
+}
+
+.player-name-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-add-player {
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(76, 175, 80, 0.3);
+    border: 2px solid #4caf50;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-add-player:hover {
+    background: rgba(76, 175, 80, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.cadastro-message {
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.cadastro-message.success {
+    background: rgba(76, 175, 80, 0.3);
+    border: 2px solid #4caf50;
+    color: #66bb6a;
+}
+
+.cadastro-message.error {
+    background: rgba(244, 67, 54, 0.3);
+    border: 2px solid #f44336;
+    color: #ffcdd2;
+}
+
+.players-list-container {
+    margin-bottom: 30px;
+}
+
+.players-list-container h3 {
+    color: #4caf50;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.players-list {
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.empty-players {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 20px;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: rgba(76, 175, 80, 0.2);
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.player-item:last-child {
+    margin-bottom: 0;
+}
+
+.player-name {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.remove-player-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(244, 67, 54, 0.3);
+    border: 2px solid #f44336;
+    color: #ffcdd2;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.remove-player-btn:hover {
+    background: rgba(244, 67, 54, 0.5);
+    transform: scale(1.1);
+}
+
+.btn-start-game {
+    width: 100%;
+    padding: 18px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(76, 175, 80, 0.3);
+    border: 3px solid #4caf50;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.btn-start-game:hover:not(:disabled) {
+    background: rgba(76, 175, 80, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 0 30px rgba(76, 175, 80, 0.8);
+}
+
+.btn-start-game:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   DISPLAY DO JOGADOR ATUAL
+   ============================================ */
+
+.current-player-display {
+    text-align: center;
+    padding: 15px 30px;
+    background: rgba(255, 193, 7, 0.2);
+    border: 3px solid #ffc107;
+    border-radius: 15px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffc107;
+    margin-bottom: 30px;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+    animation: pulse 1s infinite;
+}
+
+/* ============================================
+   RANKING LATERAL
+   ============================================ */
+
+.container {
+    flex-direction: row;
+    gap: 30px;
+}
+
+.quiz-box {
+    flex: 1;
+}
+
+.ranking-container {
+    width: 300px;
+    background: rgba(10, 46, 10, 0.9);
+    border: 3px solid #4caf50;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 0 30px rgba(76, 175, 80, 0.4);
+    position: relative;
+    z-index: 2;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.ranking-container h3 {
+    color: #4caf50;
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    text-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rank-item {
+    display: grid;
+    grid-template-columns: 50px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #4caf50;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.rank-item:hover {
+    background: rgba(76, 175, 80, 0.2);
+    transform: translateX(5px);
+}
+
+.rank-position {
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    color: #66bb6a;
+}
+
+.rank-position.rank-1 {
+    color: #ffc107;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
+}
+
+.rank-position.rank-2 {
+    color: #e0e0e0;
+    text-shadow: 0 0 10px rgba(224, 224, 224, 0.6);
+}
+
+.rank-position.rank-3 {
+    color: #cd7f32;
+    text-shadow: 0 0 10px rgba(205, 127, 50, 0.6);
+}
+
+.rank-name {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rank-score {
+    color: #4caf50;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* ============================================
+   RANKING FINAL
+   ============================================ */
+
+.final-ranking-container {
+    margin: 30px 0;
+}
+
+.final-ranking-container h3 {
+    color: #4caf50;
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.final-ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.final-rank-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto auto;
+    gap: 15px;
+    align-items: center;
+    padding: 18px 25px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #4caf50;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.final-rank-item.winner {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: #ffc107;
+    box-shadow: 0 0 25px rgba(255, 193, 7, 0.5);
+    transform: scale(1.05);
+}
+
+.final-rank-position {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    color: #66bb6a;
+}
+
+.final-rank-item.winner .final-rank-position {
+    color: #ffc107;
+    text-shadow: 0 0 15px rgba(255, 193, 7, 0.8);
+}
+
+.final-rank-name {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.final-rank-item.winner .final-rank-name {
+    color: #ffc107;
+}
+
+.final-rank-score {
+    color: #4caf50;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.final-rank-item.winner .final-rank-score {
+    color: #ffc107;
+}
+
+.final-rank-stats {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     .container {
         padding: 20px;
+        flex-direction: column;
+    }
+    
+    .ranking-container {
+        width: 100%;
+        max-height: 300px;
+        order: -1;
+    }
+    
+    .cadastro-content {
+        padding: 30px 25px;
+    }
+    
+    .cadastro-content h2 {
+        font-size: 28px;
+    }
+    
+    .cadastro-input-group {
+        flex-direction: column;
     }
     
     .header {
@@ -524,6 +934,11 @@ body::after {
     .header h1 {
         font-size: 28px;
         padding: 0;
+    }
+    
+    .current-player-display {
+        font-size: 18px;
+        padding: 12px 20px;
     }
     
     .question-container::before,
@@ -590,6 +1005,33 @@ body::after {
     
     .final-score span {
         font-size: 28px;
+    }
+    
+    .final-rank-item {
+        grid-template-columns: 50px 1fr;
+        gap: 10px;
+    }
+    
+    .final-rank-position {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .final-rank-name {
+        grid-column: 2;
+        grid-row: 1;
+        font-size: 18px;
+    }
+    
+    .final-rank-score {
+        grid-column: 1;
+        grid-row: 2;
+        font-size: 16px;
+    }
+    
+    .final-rank-stats {
+        grid-column: 2;
+        grid-row: 2;
     }
 }
 
