@@ -16,6 +16,15 @@
                 </div>
             </div>
             
+            <div class="timer-container">
+                <div class="timer-display" id="timer-display">
+                    <span>Tempo: <span id="timer-value">15</span>s</span>
+                </div>
+                <div class="timer-message" id="timer-message" style="display: none;">
+                    Tempo esgotado
+                </div>
+            </div>
+            
             <div class="question-container">
                 <div class="question-number">
                     <span id="question-number">Pergunta 1</span>
@@ -62,6 +71,14 @@
             <div class="final-content">
                 <h2>Quiz Finalizado!</h2>
                 <p class="final-score">Sua pontuação: <span id="final-score">0</span> de <span id="total-questions">0</span></p>
+                <div class="stars-container">
+                    <div class="stars-display" id="stars-display">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <p class="stars-message" id="stars-message"></p>
+                </div>
                 <button id="final-restart-btn" class="btn-restart">Jogar Novamente</button>
             </div>
         </div>
