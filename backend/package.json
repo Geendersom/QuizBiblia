@@ -1,0 +1,20 @@
+{
+  "name": "quiz-biblia-backend",
+  "version": "1.0.0",
+  "description": "Backend estrutural para Quiz Bíblia",
+  "main": "src/server.ts",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "ts-node src/server.ts",
+    "build": "tsc"
+  },
+  "keywords": ["quiz", "bible", "game"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}
+
