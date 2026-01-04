@@ -2,28 +2,8 @@
 // DIFFICULTY MANAGER - Dificuldade Adaptativa
 // ============================================
 
-/**
- * Interface para estatísticas do jogador
- */
-export interface PlayerStats {
-    taxaAcertos: number;          // 0-1 (ex: 0.8 = 80%)
-    tempoMedioResposta: number;   // em segundos
-    errosConsecutivos: number;    // quantidade
-    totalAcertos: number;
-    totalErros: number;
-    respostasNoTempo: number;
-    respostasForaDoTempo: number;
-}
+import { PlayerStats, Pergunta } from '../types';
 
-/**
- * Interface para Pergunta
- */
-interface Pergunta {
-    id: number;
-    pergunta: string;
-    alternativas: string[];
-    indiceCorreto: number;
-}
 
 /**
  * Gerenciador de dificuldade adaptativa

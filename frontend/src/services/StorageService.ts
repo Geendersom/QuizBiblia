@@ -2,6 +2,8 @@
 // STORAGE SERVICE - Gerenciamento LocalStorage
 // ============================================
 
+import { Player } from '../types';
+
 /**
  * Interface para dados salvos no LocalStorage
  */
@@ -11,20 +13,6 @@ export interface SavedGameState {
     nivelAtual: number;
     dataPartida: string;
     timestamp: number;
-}
-
-/**
- * Interface para Player (compatível com main.ts)
- */
-interface Player {
-    id: number;
-    nome: string;
-    pontuacao: number;
-    acertos: number;
-    erros: number;
-    estrelas: number;
-    respostasNoTempo: number;
-    respostasForaDoTempo: number;
 }
 
 /**

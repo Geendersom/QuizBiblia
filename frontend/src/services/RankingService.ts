@@ -2,6 +2,8 @@
 // RANKING SERVICE - Estrutura base para ranking online
 // ============================================
 
+import { Player } from '../types';
+
 /**
  * Interface para envio de score ao servidor
  */
@@ -27,18 +29,6 @@ export interface OnlineRankingEntry {
     levelReached: number;
     rank: number;
     createdAt: string;
-}
-
-/**
- * Interface para Player (compatível)
- */
-interface Player {
-    id: number;
-    nome: string;
-    pontuacao: number;
-    acertos: number;
-    erros: number;
-    estrelas: number;
 }
 
 /**

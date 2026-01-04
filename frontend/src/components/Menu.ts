@@ -57,8 +57,8 @@ export class Menu {
      * Anexa os event listeners
      */
     private attachListeners(): void {
-        const startBtn = document.getElementById('btn-start-game');
-        const manageBtn = document.getElementById('btn-manage-players');
+        const startBtn = document.getElementById('btn-start-game') as HTMLButtonElement | null;
+        const manageBtn = document.getElementById('btn-manage-players') as HTMLButtonElement | null;
 
         startBtn?.addEventListener('click', () => {
             if (startBtn.disabled) return;

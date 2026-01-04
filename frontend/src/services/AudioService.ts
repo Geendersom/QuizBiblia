@@ -41,14 +41,15 @@ class AudioServiceClass {
             }
 
             // Pré-carregar todos os arquivos de áudio
+            // Caminhos relativos ao HTML (public/index.html)
             this.audioCache = {
-                click: this.createAudio('sounds/click.mp3'),
-                correct: this.createAudio('sounds/correct.mp3'),
-                wrong: this.createAudio('sounds/wrong.mp3'),
-                timerWarning: this.createAudio('sounds/timer-warning.mp3'),
-                levelComplete: this.createAudio('sounds/level-complete.mp3'),
-                gameStart: this.createAudio('sounds/game-start.mp3'),
-                gameOver: this.createAudio('sounds/game-over.mp3')
+                click: this.createAudio('./sounds/click.mp3'),
+                correct: this.createAudio('./sounds/correct.mp3'),
+                wrong: this.createAudio('./sounds/wrong.mp3'),
+                timerWarning: this.createAudio('./sounds/timer-warning.mp3'),
+                levelComplete: this.createAudio('./sounds/level-complete.mp3'),
+                gameStart: this.createAudio('./sounds/game-start.mp3'),
+                gameOver: this.createAudio('./sounds/game-over.mp3')
             };
 
             console.log('AudioService inicializado');
