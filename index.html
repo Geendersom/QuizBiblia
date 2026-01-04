@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Perguntas e Respostas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="quiz-box">
+            <div class="header">
+                <h1>Quiz</h1>
+                <div class="score-display">
+                    <span>Pontuação: <span id="score">0</span></span>
+                </div>
+            </div>
+            
+            <div class="question-container">
+                <div class="question-number">
+                    <span id="question-number">Pergunta 1</span>
+                </div>
+                <div class="question-text" id="question-text">
+                    Carregando pergunta...
+                </div>
+            </div>
+            
+            <div class="alternatives-container">
+                <div class="alternative-row">
+                    <button class="alternative" data-index="0" id="alt-0">
+                        <span class="alt-letter">A</span>
+                        <span class="alt-text"></span>
+                    </button>
+                    <button class="alternative" data-index="1" id="alt-1">
+                        <span class="alt-letter">B</span>
+                        <span class="alt-text"></span>
+                    </button>
+                </div>
+                <div class="alternative-row">
+                    <button class="alternative" data-index="2" id="alt-2">
+                        <span class="alt-letter">C</span>
+                        <span class="alt-text"></span>
+                    </button>
+                    <button class="alternative" data-index="3" id="alt-3">
+                        <span class="alt-letter">D</span>
+                        <span class="alt-text"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button id="next-btn" class="btn-next" style="display: none;">
+                    Próxima Pergunta
+                </button>
+                <button id="restart-btn" class="btn-restart" style="display: none;">
+                    Jogar Novamente
+                </button>
+            </div>
+        </div>
+        
+        <div id="final-screen" class="final-screen" style="display: none;">
+            <div class="final-content">
+                <h2>Quiz Finalizado!</h2>
+                <p class="final-score">Sua pontuação: <span id="final-score">0</span> de <span id="total-questions">0</span></p>
+                <button id="final-restart-btn" class="btn-restart">Jogar Novamente</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="main.js"></script>
+</body>
+</html>
+
