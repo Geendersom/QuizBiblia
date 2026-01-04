@@ -1,0 +1,82 @@
+# ============================================
+# GITIGNORE - Estrutura do Projeto
+# Oculta código-fonte, mantém estrutura visível
+# ============================================
+
+# Código-fonte TypeScript (ocultar)
+*.ts
+!.gitkeep
+
+# Manter arquivos .gitkeep
+**/.gitkeep
+
+# Arquivos JavaScript compilados (ocultar)
+*.js
+!.gitkeep
+
+# Arquivos de configuração TypeScript
+tsconfig.json
+
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Arquivos de build e dist
+dist/
+build/
+*.map
+*.js.map
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Arquivos temporários
+*.tmp
+*.temp
+.cache/
+
+# Arquivos de log
+*.log
+logs/
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.*.local
+
+# Arquivos de sistema
+Thumbs.db
+desktop.ini
+
+# Arquivos de backup
+*.bak
+*.backup
+*~
+
+# Arquivos de som (se não quiser versionar)
+# Descomente se quiser ocultar também
+# *.mp3
+# *.wav
+# *.ogg
+
+# ============================================
+# MANTER VISÍVEL (serão versionados):
+# ============================================
+# - README.md, COMPILACAO.md, ESTRUTURA.md
+# - package.json, package-lock.json
+# - index.html
+# - *.css (arquivos de estilo)
+# - .gitkeep (em cada pasta para manter estrutura)
+# - Estrutura de pastas completa
+
