@@ -359,7 +359,7 @@ function mostrarPergunta(): void {
         }
         
         btn.disabled = false;
-        btn.classList.remove('correct', 'incorrect');
+        btn.classList.remove('correct', 'incorrect', 'option--selected', 'option--correct', 'option--wrong', 'option--disabled');
         btn.style.pointerEvents = 'auto';
     });
     
@@ -385,6 +385,18 @@ function selecionarAlternativa(index: number): void {
     
     quizState.respostasNoTempo++;
     
+    // Marcar alternativa selecionada (feixe de luz)
+    alternativesEls[index].classList.add('option--selected');
+    
+    // Desabilitar outras alternativas (fazer opacas)
+    alternativesEls.forEach((btn, i) => {
+        if (i !== index) {
+            btn.classList.add('option--disabled');
+        }
+        btn.disabled = true;
+        btn.style.pointerEvents = 'none';
+    });
+    
     const jogadorAtual = quizState.players[quizState.jogadorAtualIndex];
     if (jogadorAtual) {
         jogadorAtual.respostasNoTempo++;
@@ -394,24 +406,70 @@ function selecionarAlternativa(index: number): void {
         if (!acertou) {
             // Tocar som de erro
             AudioService.playWrong();
-            alternativesEls[index].classList.add('incorrect');
+            // Animação de erro
+            alternativesEls[index].classList.remove('option--selected');
+            alternativesEls[index].classList.add('option--wrong');
+            
+            // Após animação de erro, mostrar resposta correta
+            setTimeout(() => {
+                alternativesEls[index].classList.remove('option--wrong');
+                alternativesEls[index].classList.add('incorrect');
+                
+                // Destacar resposta correta com animação
+                alternativesEls[respostaCorreta].classList.remove('option--disabled');
+                alternativesEls[respostaCorreta].classList.add('option--correct');
+                
+                // Após animação, manter estado estável
+                setTimeout(() => {
+                    alternativesEls[respostaCorreta].classList.remove('option--correct');
+                    alternativesEls[respostaCorreta].classList.add('correct');
+                }, 1200);
+            }, 600);
+            
             jogadorAtual.erros++;
         } else {
             // Tocar som de acerto
             AudioService.playCorrect();
+            // Animação de acerto
+            alternativesEls[index].classList.remove('option--selected');
+            alternativesEls[index].classList.add('option--correct');
+            
+            // Após animação, manter estado estável
+            setTimeout(() => {
+                alternativesEls[index].classList.remove('option--correct');
+                alternativesEls[index].classList.add('correct');
+            }, 1200);
+            
             jogadorAtual.pontuacao += 10;
             jogadorAtual.acertos++;
             quizState.pontuacao++;
             atualizarScore();
         }
+    } else {
+        // Sem jogador - lógica similar mas simplificada
+        const acertou = index === respostaCorreta;
+        if (acertou) {
+            alternativesEls[index].classList.remove('option--selected');
+            alternativesEls[index].classList.add('option--correct');
+            setTimeout(() => {
+                alternativesEls[index].classList.remove('option--correct');
+                alternativesEls[index].classList.add('correct');
+            }, 1200);
+        } else {
+            alternativesEls[index].classList.remove('option--selected');
+            alternativesEls[index].classList.add('option--wrong');
+            setTimeout(() => {
+                alternativesEls[index].classList.remove('option--wrong');
+                alternativesEls[index].classList.add('incorrect');
+                alternativesEls[respostaCorreta].classList.remove('option--disabled');
+                alternativesEls[respostaCorreta].classList.add('option--correct');
+                setTimeout(() => {
+                    alternativesEls[respostaCorreta].classList.remove('option--correct');
+                    alternativesEls[respostaCorreta].classList.add('correct');
+                }, 1200);
+            }, 600);
+        }
     }
-    
-    alternativesEls.forEach((btn) => {
-        btn.disabled = true;
-        btn.style.pointerEvents = 'none';
-    });
-    
-    alternativesEls[respostaCorreta].classList.add('correct');
     
     atualizarRanking();
     

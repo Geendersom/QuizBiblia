@@ -191,6 +191,116 @@ body::after {
 }
 
 /* ============================================
+   KEYFRAMES - ANIMAÇÕES DE ALTERNATIVAS
+   ============================================ */
+
+@keyframes neonSweep {
+    0% {
+        left: -100%;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+@keyframes correctPulse {
+    0% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        transform: scale(1);
+    }
+    15% {
+        box-shadow: 0 0 40px rgba(76, 175, 80, 0.8);
+        transform: scale(1.02);
+    }
+    30% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        transform: scale(1);
+    }
+    45% {
+        box-shadow: 0 0 45px rgba(102, 187, 106, 0.9);
+        transform: scale(1.02);
+    }
+    60% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        transform: scale(1);
+    }
+    75% {
+        box-shadow: 0 0 50px rgba(102, 187, 106, 1);
+        transform: scale(1.02);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+        transform: scale(1);
+    }
+}
+
+@keyframes correctGlow {
+    0% {
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.6;
+    }
+    30% {
+        opacity: 0.2;
+    }
+    45% {
+        opacity: 0.7;
+    }
+    60% {
+        opacity: 0.2;
+    }
+    75% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes wrongShake {
+    0% {
+        transform: translateX(0);
+        box-shadow: 0 0 15px rgba(229, 115, 115, 0.3);
+    }
+    10% {
+        transform: translateX(-4px);
+        box-shadow: 0 0 25px rgba(229, 115, 115, 0.7);
+    }
+    20% {
+        transform: translateX(4px);
+        box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+    }
+    30% {
+        transform: translateX(-3px);
+        box-shadow: 0 0 30px rgba(229, 115, 115, 0.8);
+    }
+    40% {
+        transform: translateX(3px);
+        box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+    }
+    50% {
+        transform: translateX(0);
+        box-shadow: 0 0 25px rgba(229, 115, 115, 0.6);
+    }
+    60% {
+        box-shadow: 0 0 30px rgba(229, 115, 115, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+    }
+    100% {
+        transform: translateX(0);
+        box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+    }
+}
+
+/* ============================================
    QUIZ BOX
    ============================================ */
 
@@ -411,6 +521,29 @@ body::after {
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
     min-height: 70px;
+    overflow: hidden;
+}
+
+/* Feixe de luz neon (pseudo-elemento) */
+.alternative::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(76, 175, 80, 0.3),
+        rgba(102, 187, 106, 0.4),
+        rgba(76, 175, 80, 0.3),
+        transparent
+    );
+    opacity: 0;
+    transition: left 0.6s ease, opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .alternative:focus-visible {
@@ -418,16 +551,36 @@ body::after {
     outline-offset: 2px;
 }
 
-.alternative:hover:not(:disabled) {
+.alternative:hover:not(:disabled):not(.option--disabled) {
     background: rgba(76, 175, 80, 0.15);
     border-color: var(--green-light);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
+.alternative:active:not(:disabled)::before {
+    left: 100%;
+    opacity: 1;
+}
+
 .alternative:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: var(--shadow-md);
+}
+
+/* Estado: Selecionada (feixe de luz) */
+.alternative.option--selected::before {
+    left: -100%;
+    opacity: 1;
+    animation: neonSweep 0.6s ease-out forwards;
+}
+
+/* Estado: Desabilitada (outras opções quando uma é selecionada) */
+.alternative.option--disabled {
+    opacity: 0.4;
+    filter: saturate(0.3);
+    cursor: not-allowed;
+    transition: opacity 0.3s ease, filter 0.3s ease;
 }
 
 .alternative:disabled {
@@ -443,24 +596,80 @@ body::after {
     margin-right: var(--spacing-sm);
     flex-shrink: 0;
     min-width: 24px;
+    position: relative;
+    z-index: 2;
 }
 
 .alt-text {
     flex: 1;
     line-height: 1.5;
     color: var(--text-primary);
+    position: relative;
+    z-index: 2;
 }
 
-/* Estados das alternativas */
+/* ============================================
+   ANIMAÇÕES DE RESPOSTA CORRETA
+   ============================================ */
+
+.alternative.option--correct {
+    background: rgba(76, 175, 80, 0.25);
+    border-color: var(--green-light);
+    color: var(--text-primary);
+    animation: correctPulse 1.2s ease-out;
+    box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+}
+
+.alternative.option--correct .alt-letter {
+    color: var(--green-lighter);
+}
+
+.alternative.option--correct::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    background: linear-gradient(
+        135deg,
+        rgba(76, 175, 80, 0.2),
+        rgba(102, 187, 106, 0.3),
+        rgba(76, 175, 80, 0.2)
+    );
+    opacity: 0;
+    animation: correctGlow 1.2s ease-out;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Estado estável após animação */
 .alternative.correct {
     background: rgba(76, 175, 80, 0.25);
     border-color: var(--success);
     color: var(--text-primary);
-    box-shadow: var(--shadow-glow-strong);
+    box-shadow: 0 0 25px rgba(76, 175, 80, 0.5);
 }
 
 .alternative.correct .alt-letter {
-    color: var(--accent);
+    color: var(--green-lighter);
+}
+
+/* ============================================
+   ANIMAÇÕES DE RESPOSTA ERRADA
+   ============================================ */
+
+.alternative.option--wrong {
+    background: rgba(229, 115, 115, 0.15);
+    border-color: var(--error);
+    color: var(--text-primary);
+    animation: wrongShake 0.6s ease-out;
+    box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+}
+
+.alternative.option--wrong .alt-letter {
+    color: var(--error);
 }
 
 .alternative.incorrect {
@@ -471,7 +680,7 @@ body::after {
 }
 
 .alternative.incorrect .alt-letter {
-    color: var(--accent);
+    color: var(--error);
 }
 
 /* ============================================
