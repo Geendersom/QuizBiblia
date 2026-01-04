@@ -1,3 +1,5 @@
+// Desenvolvido por Geêndersom Araújo
+
 // ============================================
 // SERVIDOR BACKEND - ESTRUTURA BASE
 // ============================================

@@ -1,3 +1,5 @@
+// Desenvolvido por Geêndersom Araújo e Gerlano Araújo
+
 // ============================================
 // RANKING SERVICE - Estrutura base para ranking online
 // ============================================

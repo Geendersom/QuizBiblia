@@ -1,3 +1,5 @@
+// Desenvolvido por Geêndersom Araújo e Gerlano Araújo
+
 // ============================================
 // STORAGE SERVICE - Gerenciamento LocalStorage
 // ============================================
