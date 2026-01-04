@@ -9,21 +9,24 @@ export class Menu {
     private container: HTMLElement;
     private onStartGame: () => void;
     private onManagePlayers: () => void;
+    private onTogglePresentationMode?: (enabled: boolean) => void;
 
     constructor(
         container: HTMLElement,
         onStartGame: () => void,
-        onManagePlayers: () => void
+        onManagePlayers: () => void,
+        onTogglePresentationMode?: (enabled: boolean) => void
     ) {
         this.container = container;
         this.onStartGame = onStartGame;
         this.onManagePlayers = onManagePlayers;
+        this.onTogglePresentationMode = onTogglePresentationMode;
     }
 
     /**
      * Renderiza o menu inicial
      */
-    render(playersCount: number): void {
+    render(playersCount: number, isPresentationMode: boolean = false): void {
         this.container.innerHTML = `
             <div class="menu-screen">
                 <div class="menu-content">
@@ -40,11 +43,21 @@ export class Menu {
                             <span class="btn-icon">👥</span>
                             <span>GERENCIAR JOGADORES</span>
                         </button>
+                        
+                        <button id="btn-presentation-mode" class="btn-secondary ${isPresentationMode ? 'active' : ''}" title="Modo Apresentação para telão">
+                            <span class="btn-icon">📺</span>
+                            <span>${isPresentationMode ? 'DESATIVAR' : 'ATIVAR'} MODO APRESENTAÇÃO</span>
+                        </button>
                     </div>
                     
                     ${playersCount === 0 ? 
                         '<p class="menu-warning">Adicione pelo menos 1 jogador para iniciar</p>' : 
                         `<p class="menu-info">${playersCount} jogador${playersCount > 1 ? 'es' : ''} cadastrado${playersCount > 1 ? 's' : ''}</p>`
+                    }
+                    
+                    ${isPresentationMode ? 
+                        '<p class="menu-info presentation-mode-indicator">📺 Modo Apresentação Ativo</p>' : 
+                        ''
                     }
                 </div>
             </div>
@@ -59,6 +72,7 @@ export class Menu {
     private attachListeners(): void {
         const startBtn = document.getElementById('btn-start-game') as HTMLButtonElement | null;
         const manageBtn = document.getElementById('btn-manage-players') as HTMLButtonElement | null;
+        const presentationBtn = document.getElementById('btn-presentation-mode') as HTMLButtonElement | null;
 
         startBtn?.addEventListener('click', () => {
             if (startBtn.disabled) return;
@@ -69,6 +83,14 @@ export class Menu {
         manageBtn?.addEventListener('click', () => {
             AudioService.playClick();
             this.onManagePlayers();
+        });
+
+        presentationBtn?.addEventListener('click', () => {
+            AudioService.playClick();
+            const isActive = presentationBtn.classList.contains('active');
+            if (this.onTogglePresentationMode) {
+                this.onTogglePresentationMode(!isActive);
+            }
         });
     }
 

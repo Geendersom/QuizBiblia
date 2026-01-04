@@ -1444,3 +1444,182 @@ body::after {
         padding: var(--spacing-sm) var(--spacing-md);
     }
 }
+
+/* ============================================
+   TRANSIÇÕES CINEMATOGRÁFICAS
+   ============================================ */
+
+.question-container,
+.alternatives-container {
+    transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+}
+
+/* Estado: Saída */
+.question-exit {
+    animation: questionExit 0.4s ease-out forwards;
+}
+
+/* Estado: Entrada */
+.question-enter {
+    animation: questionEnter 0.6s ease-out forwards;
+}
+
+/* Estado: Ativo */
+.question-active {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+}
+
+/* ============================================
+   KEYFRAMES - TRANSIÇÕES
+   ============================================ */
+
+@keyframes questionExit {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    50% {
+        opacity: 0.3;
+        transform: translateY(-10px) scale(0.98);
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.97);
+        filter: blur(4px);
+    }
+}
+
+@keyframes questionEnter {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+        filter: blur(4px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(10px) scale(0.99);
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* ============================================
+   MODO APRESENTAÇÃO
+   ============================================ */
+
+body.presentation-mode {
+    font-size: 1.15em;
+}
+
+body.presentation-mode .quiz-box {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+}
+
+/* Pergunta maior */
+body.presentation-mode .question-text {
+    font-size: 2.5rem;
+    line-height: 1.4;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    min-height: 120px;
+}
+
+body.presentation-mode .question-number {
+    font-size: 1.2rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Alternativas maiores */
+body.presentation-mode .alternative {
+    font-size: 1.5rem;
+    padding: var(--spacing-xl) var(--spacing-xl);
+    min-height: 100px;
+    border-width: 3px;
+}
+
+body.presentation-mode .alt-letter {
+    font-size: 2rem;
+    min-width: 40px;
+    margin-right: var(--spacing-lg);
+}
+
+body.presentation-mode .alt-text {
+    font-size: 1.5rem;
+    line-height: 1.6;
+}
+
+body.presentation-mode .alternative-row {
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Timer maior */
+body.presentation-mode .timer-display {
+    font-size: 2rem;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-width: 3px;
+}
+
+/* Jogador atual maior */
+body.presentation-mode .current-player-display {
+    font-size: 1.8rem;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Score maior */
+body.presentation-mode .score-display {
+    font-size: 1.3rem;
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+/* Header maior */
+body.presentation-mode .header h1 {
+    font-size: 3rem;
+}
+
+/* Ranking maior (se visível) */
+body.presentation-mode .ranking-container {
+    font-size: 1.2rem;
+}
+
+body.presentation-mode .rank-item {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1.1rem;
+}
+
+/* Ocultar elementos secundários */
+body.presentation-mode .question-number {
+    opacity: 0.7;
+}
+
+/* Contraste alto */
+body.presentation-mode .question-text {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+body.presentation-mode .alternative {
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Menu - botão ativo */
+.btn-secondary.active {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: var(--green-lighter);
+    box-shadow: var(--shadow-glow);
+}
+
+.presentation-mode-indicator {
+    color: var(--green-lighter);
+    font-weight: 600;
+    margin-top: var(--spacing-sm);
+}

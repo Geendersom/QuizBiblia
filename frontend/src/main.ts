@@ -27,7 +27,8 @@ import { AudioService } from './services/AudioService';
 const appState: AppState = {
     currentScreen: 'menu',
     players: [],
-    gameStarted: false
+    gameStarted: false,
+    isPresentationMode: false
 };
 
 const quizState: QuizState = {
@@ -91,7 +92,8 @@ const timerMessage = document.getElementById('timer-message') as HTMLElement;
 const menu = new Menu(
     menuContainer,
     () => handleStartGame(),
-    () => handleManagePlayers()
+    () => handleManagePlayers(),
+    (enabled: boolean) => handleTogglePresentationMode(enabled)
 );
 
 const playerMenu = new PlayerMenu(
@@ -128,7 +130,7 @@ function showScreen(screen: ScreenType): void {
     switch (screen) {
         case 'menu':
             menuContainer.style.display = 'flex';
-            menu.render(appState.players.length);
+            menu.render(appState.players.length, appState.isPresentationMode);
             break;
         case 'playerMenu':
             playerMenuContainer.style.display = 'flex';
@@ -187,7 +189,33 @@ function handlePlayersChanged(players: Player[]): void {
     appState.players = players;
     // Atualizar menu para refletir mudanças
     if (appState.currentScreen === 'menu') {
-        menu.render(players.length);
+        menu.render(players.length, appState.isPresentationMode);
+    }
+}
+
+/**
+ * Alterna o modo apresentação
+ */
+function handleTogglePresentationMode(enabled: boolean): void {
+    appState.isPresentationMode = enabled;
+    
+    // Aplicar classe no body
+    if (enabled) {
+        document.body.classList.add('presentation-mode');
+    } else {
+        document.body.classList.remove('presentation-mode');
+    }
+    
+    // Salvar no LocalStorage
+    try {
+        localStorage.setItem('quizbiblia_presentation_mode', enabled.toString());
+    } catch (error) {
+        console.warn('Erro ao salvar modo apresentação:', error);
+    }
+    
+    // Atualizar menu
+    if (appState.currentScreen === 'menu') {
+        menu.render(appState.players.length, enabled);
     }
 }
 
@@ -324,7 +352,72 @@ function inicializarQuiz(): void {
 
 function mostrarPergunta(): void {
     const pergunta = quizState.perguntas[quizState.perguntaAtual];
+    const questionContainer = document.querySelector('.question-container') as HTMLElement;
+    const alternativesContainer = document.querySelector('.alternatives-container') as HTMLElement;
     
+    // Transição de saída (se não for primeira pergunta)
+    if (quizState.perguntaAtual > 0 && questionContainer && alternativesContainer) {
+        // Remover classes anteriores
+        questionContainer.classList.remove('question-active', 'question-enter');
+        alternativesContainer.classList.remove('question-active', 'question-enter');
+        
+        // Adicionar classe de saída
+        questionContainer.classList.add('question-exit');
+        alternativesContainer.classList.add('question-exit');
+        
+        // Após transição de saída, atualizar conteúdo e fazer entrada
+        setTimeout(() => {
+            atualizarConteudoPergunta(pergunta);
+            
+            // Remover classe de saída e adicionar de entrada
+            questionContainer.classList.remove('question-exit');
+            alternativesContainer.classList.remove('question-exit');
+            questionContainer.classList.add('question-enter');
+            alternativesContainer.classList.add('question-enter');
+            
+            // Após entrada, remover classe e manter estado ativo
+            setTimeout(() => {
+                questionContainer.classList.remove('question-enter');
+                alternativesContainer.classList.remove('question-enter');
+                questionContainer.classList.add('question-active');
+                alternativesContainer.classList.add('question-active');
+                
+                // Iniciar timer após transição completa
+                setTimeout(() => {
+                    iniciarTimer();
+                }, 100);
+            }, 600);
+        }, 400);
+    } else {
+        // Primeira pergunta - apenas entrada
+        atualizarConteudoPergunta(pergunta);
+        
+        if (questionContainer && alternativesContainer) {
+            // Remover classes anteriores
+            questionContainer.classList.remove('question-active', 'question-exit');
+            alternativesContainer.classList.remove('question-active', 'question-exit');
+            
+            questionContainer.classList.add('question-enter');
+            alternativesContainer.classList.add('question-enter');
+            
+            setTimeout(() => {
+                questionContainer.classList.remove('question-enter');
+                alternativesContainer.classList.remove('question-enter');
+                questionContainer.classList.add('question-active');
+                alternativesContainer.classList.add('question-active');
+                
+                setTimeout(() => {
+                    iniciarTimer();
+                }, 100);
+            }, 600);
+        }
+    }
+}
+
+/**
+ * Atualiza o conteúdo da pergunta (sem transição)
+ */
+function atualizarConteudoPergunta(pergunta: any): void {
     // Atualizar jogador atual
     if (quizState.players.length > 0) {
         quizState.jogadorAtualIndex = quizState.perguntaAtual % quizState.players.length;
@@ -345,10 +438,6 @@ function mostrarPergunta(): void {
     // Atualizar texto da pergunta
     if (questionTextEl) {
         questionTextEl.textContent = pergunta.pergunta;
-        questionTextEl.style.animation = 'none';
-        setTimeout(() => {
-            questionTextEl.style.animation = 'fadeIn 0.3s ease-out';
-        }, 10);
     }
     
     // Atualizar alternativas
@@ -365,11 +454,6 @@ function mostrarPergunta(): void {
     
     if (nextBtn) nextBtn.style.display = 'none';
     quizState.respostaSelecionada = null;
-    
-    // Aguardar um pouco antes de iniciar o timer (game feel)
-    setTimeout(() => {
-        iniciarTimer();
-    }, 300);
 }
 
 function selecionarAlternativa(index: number): void {
@@ -483,13 +567,16 @@ function selecionarAlternativa(index: number): void {
 }
 
 function proximaPergunta(): void {
-    quizState.perguntaAtual++;
-    
-    if (quizState.perguntaAtual < quizState.perguntas.length) {
-        mostrarPergunta();
-    } else {
-        finalizarNivel();
-    }
+    // Pequena pausa antes da transição
+    setTimeout(() => {
+        quizState.perguntaAtual++;
+        
+        if (quizState.perguntaAtual < quizState.perguntas.length) {
+            mostrarPergunta();
+        } else {
+            finalizarNivel();
+        }
+    }, 400);
 }
 
 function finalizarNivel(): void {
@@ -643,6 +730,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Renderizar controle de áudio
     audioControl.render();
     
+    // Carregar modo apresentação do LocalStorage
+    try {
+        const savedMode = localStorage.getItem('quizbiblia_presentation_mode');
+        if (savedMode === 'true') {
+            appState.isPresentationMode = true;
+            document.body.classList.add('presentation-mode');
+        }
+    } catch (error) {
+        console.warn('Erro ao carregar modo apresentação:', error);
+    }
+    
     // Mostrar menu inicial
     showScreen('menu');
     
@@ -652,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const saved = (window as any).StorageService.loadGameState();
             if (saved && saved.players) {
                 appState.players = saved.players;
-                menu.render(saved.players.length);
+                menu.render(saved.players.length, appState.isPresentationMode);
             }
         }
     } catch (error) {

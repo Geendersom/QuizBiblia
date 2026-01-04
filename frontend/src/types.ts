@@ -81,5 +81,6 @@ export interface AppState {
     currentScreen: ScreenType;
     players: Player[];
     gameStarted: boolean;
+    isPresentationMode: boolean;
 }
 
