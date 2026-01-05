@@ -1,0 +1,20 @@
+{
+  "name": "quiz-biblia-frontend",
+  "version": "1.0.0",
+  "description": "Frontend do Quiz Bíblia",
+  "scripts": {
+    "compile": "tsc",
+    "build": "tsc",
+    "serve": "cd public && python3 -m http.server 8000"
+  },
+  "keywords": [
+    "quiz",
+    "bible",
+    "game"
+  ],
+  "author": "Geêndersom Araújo e Gerlano Araújo",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

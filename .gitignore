@@ -64,6 +64,12 @@ desktop.ini
 *.backup
 *~
 
+# Arquivos de documentação (ocultar todos, exceto README)
+*.txt
+*.md
+!README.md
+!README.txt
+
 # Arquivos de som (se não quiser versionar)
 # Descomente se quiser ocultar também
 # *.mp3
@@ -73,7 +79,7 @@ desktop.ini
 # ============================================
 # MANTER VISÍVEL (serão versionados):
 # ============================================
-# - README.md, COMPILACAO.md, ESTRUTURA.md
+# - README.md, README.txt (exceções acima)
 # - package.json, package-lock.json
 # - index.html
 # - *.css (arquivos de estilo)
