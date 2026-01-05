@@ -5,7 +5,7 @@
 // ============================================
 
 // ============================================
-// IMPORTS - Serviços globais (carregados via script tags)
+// IMPORTS
 // ============================================
 declare global {
     interface Window {
@@ -15,12 +15,15 @@ declare global {
     }
 }
 
-import { QuizState, Player, ScreenType, AppState } from './types';
-import { getLevelQuestions } from './data/questionsAdapter';
-import { Menu } from './components/Menu';
-import { PlayerMenu } from './components/PlayerMenu';
-import { AudioControl } from './components/AudioControl';
-import { AudioService } from './services/AudioService';
+import { QuizState, Player, ScreenType, AppState } from './types.js';
+import { getLevelQuestions } from './data/questionsAdapter.js';
+import { Menu } from './components/Menu.js';
+import { PlayerMenu } from './components/PlayerMenu.js';
+import { AudioControl } from './components/AudioControl.js';
+import { AudioService } from './services/AudioService.js';
+import { StorageService } from './services/StorageService.js';
+import { RankingService } from './services/RankingService.js';
+import { DifficultyManager } from './services/DifficultyManager.js';
 
 // ============================================
 // ESTADO GLOBAL DA APLICAÇÃO
@@ -56,63 +59,174 @@ const quizState: QuizState = {
 };
 
 // ============================================
-// ELEMENTOS DOM
+// VARIÁVEIS GLOBAIS DE ELEMENTOS DOM
 // ============================================
 
-const container = document.querySelector('.container') as HTMLElement;
-const menuContainer = document.createElement('div');
-menuContainer.id = 'menu-container';
+let appRoot: HTMLElement;
+let menuContainer: HTMLElement;
+let playerMenuContainer: HTMLElement;
+let gameContainer: HTMLElement;
+let rankingContainer: HTMLElement;
+let finalScreen: HTMLElement;
+let audioControlContainer: HTMLElement;
+let questionTextEl: HTMLElement;
+let questionNumberEl: HTMLElement;
+let scoreEl: HTMLElement;
+let currentPlayerDisplay: HTMLElement;
+let alternativesEls: NodeListOf<HTMLButtonElement>;
+let nextBtn: HTMLButtonElement;
+let rankingList: HTMLElement;
+let timerDisplay: HTMLElement;
+let timerValue: HTMLElement;
+let timerMessage: HTMLElement;
 
-const playerMenuContainer = document.createElement('div');
-playerMenuContainer.id = 'player-menu-container';
+/**
+ * Cria a estrutura HTML dinamicamente
+ */
+function createHTMLStructure(): void {
+    appRoot = document.getElementById('app-root') as HTMLElement;
+    if (!appRoot) {
+        console.error('ERRO: app-root não encontrado! Criando fallback...');
+        appRoot = document.createElement('div');
+        appRoot.id = 'app-root';
+        appRoot.className = 'container';
+        document.body.appendChild(appRoot);
+    }
 
-const gameContainer = document.querySelector('.quiz-box') as HTMLElement;
-const finalScreen = document.getElementById('final-screen') as HTMLElement;
+    // Criar containers dinamicamente
+    menuContainer = document.createElement('div');
+    menuContainer.id = 'menu-container';
 
-// Container para controle de áudio
-const audioControlContainer = document.createElement('div');
-audioControlContainer.id = 'audio-control-container';
-audioControlContainer.className = 'audio-control-container';
+    playerMenuContainer = document.createElement('div');
+    playerMenuContainer.id = 'player-menu-container';
 
-// Elementos do jogo
-const questionTextEl = document.getElementById('question-text') as HTMLElement;
-const questionNumberEl = document.getElementById('question-number') as HTMLElement;
-const scoreEl = document.getElementById('score') as HTMLElement;
-const currentPlayerDisplay = document.getElementById('current-player-display') as HTMLElement;
-const alternativesEls = document.querySelectorAll('.alternative') as NodeListOf<HTMLButtonElement>;
-const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
-const rankingContainer = document.getElementById('ranking-container') as HTMLElement;
-const rankingList = document.getElementById('ranking-list') as HTMLElement;
-const timerDisplay = document.getElementById('timer-display') as HTMLElement;
-const timerValue = document.getElementById('timer-value') as HTMLElement;
-const timerMessage = document.getElementById('timer-message') as HTMLElement;
+    // Criar estrutura do jogo
+    gameContainer = document.createElement('div');
+    gameContainer.className = 'quiz-box';
+    gameContainer.style.display = 'none';
+    gameContainer.innerHTML = `
+        <div class="header">
+            <h1>Quiz</h1>
+            <div class="score-display">
+                <span>Pontuação: <span id="score">0</span></span>
+            </div>
+        </div>
+        
+        <div id="current-player-display" class="current-player-display" style="display: none;">
+            Vez de: Jogador 1
+        </div>
+        
+        <div class="timer-container">
+            <div class="timer-display" id="timer-display">
+                <span>Tempo: <span id="timer-value">15</span>s</span>
+            </div>
+            <div class="timer-message" id="timer-message" style="display: none;">
+                Tempo esgotado
+            </div>
+        </div>
+        
+        <div class="question-container">
+            <div class="question-number">
+                <span id="question-number">Pergunta 1</span>
+            </div>
+            <div class="question-text" id="question-text">
+                Carregando pergunta...
+            </div>
+        </div>
+        
+        <div class="alternatives-container">
+            <div class="alternative-row">
+                <button class="alternative" data-index="0" id="alt-0">
+                    <span class="alt-letter">A</span>
+                    <span class="alt-text"></span>
+                </button>
+                <button class="alternative" data-index="1" id="alt-1">
+                    <span class="alt-letter">B</span>
+                    <span class="alt-text"></span>
+                </button>
+            </div>
+            <div class="alternative-row">
+                <button class="alternative" data-index="2" id="alt-2">
+                    <span class="alt-letter">C</span>
+                    <span class="alt-text"></span>
+                </button>
+                <button class="alternative" data-index="3" id="alt-3">
+                    <span class="alt-letter">D</span>
+                    <span class="alt-text"></span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button id="next-btn" class="btn-next" style="display: none;">
+                Próxima Pergunta
+            </button>
+        </div>
+    `;
+
+    // Criar ranking lateral
+    rankingContainer = document.createElement('div');
+    rankingContainer.id = 'ranking-container';
+    rankingContainer.className = 'ranking-container';
+    rankingContainer.style.display = 'none';
+    rankingContainer.innerHTML = `
+        <h3>Ranking</h3>
+        <div id="ranking-list" class="ranking-list"></div>
+    `;
+
+    // Adicionar ao app-root
+    appRoot.appendChild(menuContainer);
+    appRoot.appendChild(gameContainer);
+    appRoot.appendChild(rankingContainer);
+
+    finalScreen = document.getElementById('final-screen') as HTMLElement;
+
+    // Container para controle de áudio
+    audioControlContainer = document.createElement('div');
+    audioControlContainer.id = 'audio-control-container';
+    audioControlContainer.className = 'audio-control-container';
+    document.body.appendChild(audioControlContainer);
+
+    // Referências aos elementos criados
+    questionTextEl = document.getElementById('question-text') as HTMLElement;
+    questionNumberEl = document.getElementById('question-number') as HTMLElement;
+    scoreEl = document.getElementById('score') as HTMLElement;
+    currentPlayerDisplay = document.getElementById('current-player-display') as HTMLElement;
+    alternativesEls = document.querySelectorAll('.alternative') as NodeListOf<HTMLButtonElement>;
+    nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+    rankingList = document.getElementById('ranking-list') as HTMLElement;
+    timerDisplay = document.getElementById('timer-display') as HTMLElement;
+    timerValue = document.getElementById('timer-value') as HTMLElement;
+    timerMessage = document.getElementById('timer-message') as HTMLElement;
+}
 
 // ============================================
 // COMPONENTES
 // ============================================
 
-const menu = new Menu(
-    menuContainer,
-    () => handleStartGame(),
-    () => handleManagePlayers(),
-    (enabled: boolean) => handleTogglePresentationMode(enabled)
-);
+let menu: Menu;
+let playerMenu: PlayerMenu;
+let audioControl: AudioControl;
 
-const playerMenu = new PlayerMenu(
-    playerMenuContainer,
-    () => handleClosePlayerMenu(),
-    (players) => handlePlayersChanged(players)
-);
+function initializeComponents(): void {
+    menu = new Menu(
+        menuContainer,
+        () => handleStartGame(),
+        () => handleManagePlayers(),
+        (enabled: boolean) => handleTogglePresentationMode(enabled)
+    );
 
-const audioControl = new AudioControl(audioControlContainer);
+    playerMenu = new PlayerMenu(
+        playerMenuContainer,
+        () => handleClosePlayerMenu(),
+        (players) => handlePlayersChanged(players)
+    );
 
-// Adicionar containers ao DOM
-if (container && gameContainer) {
-    container.insertBefore(menuContainer, gameContainer);
+    audioControl = new AudioControl(audioControlContainer);
+
+    // Adicionar player menu ao body (modal overlay)
     document.body.appendChild(playerMenuContainer);
 }
-// Adicionar controle de áudio ao body (topo direito)
-document.body.appendChild(audioControlContainer);
 
 // ============================================
 // GERENCIAMENTO DE TELAS
@@ -693,32 +807,36 @@ function atualizarRankingFinal(): void {
 }
 
 // ============================================
-// EVENT LISTENERS
+// EVENT LISTENERS - Anexar após DOM estar pronto
 // ============================================
 
-alternativesEls.forEach((btn, index) => {
-    btn.addEventListener('click', () => {
-        // Tocar som de clique
-        AudioService.playClick();
-        selecionarAlternativa(index);
+function attachEventListeners(): void {
+    // Event listeners para alternativas
+    const alts = document.querySelectorAll('.alternative') as NodeListOf<HTMLButtonElement>;
+    alts.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+            AudioService.playClick();
+            selecionarAlternativa(index);
+        });
     });
-});
 
-if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-        // Tocar som de clique
-        AudioService.playClick();
-        proximaPergunta();
-    });
-}
+    // Event listener para botão "Próxima Pergunta"
+    const nextBtnEl = document.getElementById('next-btn') as HTMLButtonElement;
+    if (nextBtnEl) {
+        nextBtnEl.addEventListener('click', () => {
+            AudioService.playClick();
+            proximaPergunta();
+        });
+    }
 
-const finalRestartBtn = document.getElementById('final-restart-btn') as HTMLButtonElement;
-if (finalRestartBtn) {
-    finalRestartBtn.addEventListener('click', () => {
-        // Tocar som de clique
-        AudioService.playClick();
-        showScreen('menu');
-    });
+    // Event listener para botão "Novo Jogo"
+    const finalRestartBtn = document.getElementById('final-restart-btn') as HTMLButtonElement;
+    if (finalRestartBtn) {
+        finalRestartBtn.addEventListener('click', () => {
+            AudioService.playClick();
+            showScreen('menu');
+        });
+    }
 }
 
 // ============================================
@@ -726,37 +844,75 @@ if (finalRestartBtn) {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar AudioService
-    AudioService.init();
+    console.log('🚀 Iniciando Quiz Bíblia...');
     
-    // Renderizar controle de áudio
-    audioControl.render();
-    
-    // Carregar modo apresentação do LocalStorage
     try {
-        const savedMode = localStorage.getItem('quizbiblia_presentation_mode');
-        if (savedMode === 'true') {
-            appState.isPresentationMode = true;
-            document.body.classList.add('presentation-mode');
+        // 1. Criar estrutura HTML primeiro
+        console.log('📐 Criando estrutura HTML...');
+        createHTMLStructure();
+        
+        // 2. Inicializar componentes
+        console.log('🧩 Inicializando componentes...');
+        initializeComponents();
+        
+        // 3. Inicializar serviços
+        console.log('📦 Inicializando serviços...');
+        AudioService.init();
+        StorageService.init();
+        RankingService.init();
+        DifficultyManager.init();
+        
+        // Expor serviços globalmente (para compatibilidade)
+        (window as any).StorageService = StorageService;
+        (window as any).RankingService = RankingService;
+        (window as any).DifficultyManager = DifficultyManager;
+        
+        console.log('✅ Serviços inicializados');
+        
+        // 4. Renderizar controle de áudio
+        audioControl.render();
+        
+        // 5. Anexar event listeners (após criar HTML dinâmico)
+        attachEventListeners();
+        
+        // 6. Carregar modo apresentação do LocalStorage
+        try {
+            const savedMode = localStorage.getItem('quizbiblia_presentation_mode');
+            if (savedMode === 'true') {
+                appState.isPresentationMode = true;
+                document.body.classList.add('presentation-mode');
+            }
+        } catch (error) {
+            console.warn('Erro ao carregar modo apresentação:', error);
         }
-    } catch (error) {
-        console.warn('Erro ao carregar modo apresentação:', error);
-    }
-    
-    // Mostrar menu inicial
-    showScreen('menu');
-    
-    // Carregar jogadores salvos se houver
-    try {
-        if (typeof (window as any).StorageService !== 'undefined') {
-            const saved = (window as any).StorageService.loadGameState();
-            if (saved && saved.players) {
+        
+        console.log('🎮 Mostrando menu inicial...');
+        // 7. Mostrar menu inicial
+        showScreen('menu');
+        
+        // 8. Carregar jogadores salvos se houver
+        try {
+            const saved = StorageService.loadGameState();
+            if (saved && saved.players && saved.players.length > 0) {
                 appState.players = saved.players;
                 menu.render(saved.players.length, appState.isPresentationMode);
             }
+        } catch (error) {
+            console.warn('Erro ao carregar jogadores salvos:', error);
         }
+        
+        console.log('✅ Inicialização completa!');
     } catch (error) {
-        console.warn('Erro ao carregar jogadores salvos:', error);
+        console.error('❌ ERRO na inicialização:', error);
+        // Mostrar mensagem de erro no DOM
+        const errorRoot = document.getElementById('app-root') || document.body;
+        errorRoot.innerHTML = `
+            <div style="color: #ff6b6b; padding: 40px; text-align: center;">
+                <h2>Erro ao carregar o jogo</h2>
+                <p>${error instanceof Error ? error.message : String(error)}</p>
+                <p style="margin-top: 20px; font-size: 0.9em; color: #999;">Verifique o console do navegador para mais detalhes.</p>
+            </div>
+        `;
     }
 });
 

@@ -4,8 +4,8 @@
 // COMPONENTE: MENU INICIAL
 // ============================================
 
-import { AppState } from '../types';
-import { AudioService } from '../services/AudioService';
+import { AppState } from '../types.js';
+import { AudioService } from '../services/AudioService.js';
 
 export class Menu {
     private container: HTMLElement;

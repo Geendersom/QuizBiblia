@@ -4,8 +4,8 @@
 // COMPONENTE: MENU DE JOGADORES
 // ============================================
 
-import { Player } from '../types';
-import { AudioService } from '../services/AudioService';
+import { Player } from '../types.js';
+import { AudioService } from '../services/AudioService.js';
 
 export class PlayerMenu {
     private container: HTMLElement;

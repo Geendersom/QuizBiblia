@@ -4,7 +4,7 @@
 // RANKING SERVICE - Estrutura base para ranking online
 // ============================================
 
-import { Player } from '../types';
+import { Player } from '../types.js';
 
 /**
  * Interface para envio de score ao servidor

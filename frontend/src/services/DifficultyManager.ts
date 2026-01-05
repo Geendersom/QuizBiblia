@@ -4,7 +4,7 @@
 // DIFFICULTY MANAGER - Dificuldade Adaptativa
 // ============================================
 
-import { PlayerStats, Pergunta } from '../types';
+import { PlayerStats, Pergunta } from '../types.js';
 
 
 /**

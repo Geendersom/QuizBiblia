@@ -4,7 +4,7 @@
 // COMPONENTE: TELA DE JOGO
 // ============================================
 
-import { Pergunta, Player } from '../types';
+import { Pergunta, Player } from '../types.js';
 
 export class GameScreen {
     private container: HTMLElement;

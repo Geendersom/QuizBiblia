@@ -133,6 +133,7 @@ body::after {
 /* ============================================
    ANIMAÇÕES BASE
    ============================================ */
+   /* Animações movidas para animations.css - verifique se animations.css está carregado */
 
 @keyframes fadeIn {
     from {

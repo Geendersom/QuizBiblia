@@ -1,0 +1,210 @@
+/* Desenvolvido por Geêndersom Araújo e Gerlano Araújo */
+
+/* ============================================
+   ANIMAÇÕES DO JOGO
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.02);
+        opacity: 0.9;
+    }
+}
+
+@keyframes pulseUrgent {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+    }
+    50% {
+        opacity: 0.85;
+        box-shadow: 0 0 30px rgba(255, 152, 0, 0.8);
+    }
+}
+
+@keyframes starPop {
+    0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.2) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes neonSweep {
+    0% {
+        left: -100%;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+@keyframes correctPulse {
+    0% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        transform: scale(1);
+    }
+    15% {
+        box-shadow: 0 0 40px rgba(76, 175, 80, 0.8);
+        transform: scale(1.02);
+    }
+    30% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        transform: scale(1);
+    }
+    45% {
+        box-shadow: 0 0 45px rgba(102, 187, 106, 0.9);
+        transform: scale(1.02);
+    }
+    60% {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        transform: scale(1);
+    }
+    75% {
+        box-shadow: 0 0 50px rgba(102, 187, 106, 1);
+        transform: scale(1.02);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+        transform: scale(1);
+    }
+}
+
+@keyframes correctGlow {
+    0% {
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.6;
+    }
+    30% {
+        opacity: 0.2;
+    }
+    45% {
+        opacity: 0.7;
+    }
+    60% {
+        opacity: 0.2;
+    }
+    75% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes wrongShake {
+    0% {
+        transform: translateX(0);
+        box-shadow: 0 0 15px rgba(229, 115, 115, 0.3);
+    }
+    10% {
+        transform: translateX(-4px);
+        box-shadow: 0 0 25px rgba(229, 115, 115, 0.7);
+    }
+    20% {
+        transform: translateX(4px);
+        box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+    }
+    30% {
+        transform: translateX(-3px);
+        box-shadow: 0 0 30px rgba(229, 115, 115, 0.8);
+    }
+    40% {
+        transform: translateX(3px);
+        box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+    }
+    50% {
+        transform: translateX(-2px);
+        box-shadow: 0 0 25px rgba(229, 115, 115, 0.7);
+    }
+    60% {
+        transform: translateX(2px);
+        box-shadow: 0 0 20px rgba(229, 115, 115, 0.5);
+    }
+    70% {
+        transform: translateX(-1px);
+    }
+    80% {
+        transform: translateX(1px);
+    }
+    100% {
+        transform: translateX(0);
+        box-shadow: 0 0 15px rgba(229, 115, 115, 0.3);
+    }
+}
+
+@keyframes questionExit {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    50% {
+        opacity: 0.3;
+        transform: translateY(-10px) scale(0.98);
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.97);
+        filter: blur(4px);
+    }
+}
+
+@keyframes questionEnter {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+        filter: blur(4px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(10px) scale(0.99);
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+

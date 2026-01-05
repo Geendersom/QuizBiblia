@@ -4,7 +4,7 @@
 // COMPONENTE: CONTROLE DE ÁUDIO
 // ============================================
 
-import { AudioService } from '../services/AudioService';
+import { AudioService } from '../services/AudioService.js';
 
 export class AudioControl {
     private container: HTMLElement;

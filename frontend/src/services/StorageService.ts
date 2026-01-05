@@ -4,7 +4,7 @@
 // STORAGE SERVICE - Gerenciamento LocalStorage
 // ============================================
 
-import { Player } from '../types';
+import { Player } from '../types.js';
 
 /**
  * Interface para dados salvos no LocalStorage

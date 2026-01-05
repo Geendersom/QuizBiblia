@@ -4,7 +4,7 @@
 // COMPONENTE: RANKING
 // ============================================
 
-import { Player } from '../types';
+import { Player } from '../types.js';
 
 export class Ranking {
     private container: HTMLElement;

@@ -4,9 +4,9 @@
 // ADAPTADOR DE PERGUNTAS
 // ============================================
 
-import { LEVELS, Question as LevelQuestion, Level } from './questions';
-import { Pergunta } from '../types';
-import { shuffleQuestions } from '../utils/shuffle';
+import { LEVELS, Question as LevelQuestion, Level } from './questions.js';
+import { Pergunta } from '../types.js';
+import { shuffleQuestions } from '../utils/shuffle.js';
 
 /**
  * Converte Question do formato LEVELS para Pergunta do formato do jogo
